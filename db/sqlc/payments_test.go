@@ -2,6 +2,8 @@ package db
 
 import (
 	"context"
+	"github.com/jackc/pgtype"
+	"math/rand"
 	"testing"
 	"time"
 
@@ -31,10 +33,16 @@ func createRandomPaymentRequest(t *testing.T) PaymentRequest {
 func createRandomPettyCash(t *testing.T) PettyCash {
 	user := createRandomUser(t)
 
-	args := CreatePettyCashParams{
+	randomFloat := rand.Float64() * 1000
+	var amount pgtype.Numeric
+	err := amount.Set(randomFloat)
+	if err != nil {
+		panic(err)
+	}
 
+	args := CreatePettyCashParams{
 		EmployeeID:      int32(user.ID),
-		Amount:          utils.RandomString(3),
+		Amount:          amount,
 		Description:     utils.RandomString(100),
 		TransactionDate: time.Now(),
 		Folio:           "BANK",

@@ -2,9 +2,9 @@ package db
 
 import (
 	"context"
+	"github.com/qwetu_petro/backend/utils"
 	"testing"
 
-	"github.com/qwetu_petro/backend/utils"
 	"github.com/stretchr/testify/require"
 )
 

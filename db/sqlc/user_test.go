@@ -15,8 +15,9 @@ func createRandomUser(t *testing.T) User {
 	email := utils.RandomEmail()
 
 	arg := CreateUserParams{
-		Username: name,
-		Email:    email,
+		Username:   name,
+		Email:      email,
+		Department: "ACCOUNTS",
 	}
 	user, err := testQueries.CreateUser(context.Background(), arg)
 	require.NoError(t, err)

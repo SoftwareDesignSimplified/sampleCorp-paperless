@@ -19,10 +19,10 @@ func createRandomInvoice(t *testing.T) Invoice {
 		PurchaseOrderNumber: po.PoNo,
 		CompanyID:           int32(company.ID),
 		AmountDue:           1000,
-		BankDetails:         &bankID,
+		BankDetails:         bankID,
 		Site:                "Site",
 		SignatoryID:         int32(sig.ID),
-		SentOrReceived:      &status,
+		SentOrReceived:      status,
 	}
 	invoice, err := testQueries.CreateInvoice(context.Background(), arg)
 	require.NoError(t, err)
