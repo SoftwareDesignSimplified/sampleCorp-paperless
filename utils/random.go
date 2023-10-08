@@ -34,6 +34,11 @@ func RandomInt() int {
 	return rand.Int()
 }
 
+func RandomDepartment() string {
+	allDepartments := []string{"ACCOUNTS", "PROCUREMENT", "FINANCE", "ADMIN"}
+	return allDepartments[rand.Intn(len(allDepartments))]
+}
+
 // IntToPgNumeric int to pg numeric
 func IntToPgNumeric(i int) pgtype.Numeric {
 	var n pgtype.Numeric
