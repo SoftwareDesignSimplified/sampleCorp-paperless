@@ -49,16 +49,6 @@ func (server *Server) Start(address string) error {
 		}
 	}()
 
-	// handle https traffic in a goroutine
-	go func() {
-		if err := server.router.RunTLS(":443",
-			"/etc/letsencrypt/live/qwetu.api.isaacbyron.com/fullchain.pem",
-			"/etc/letsencrypt/live/qwetu.api.isaacbyron.com/privkey.pem"); err != nil {
-			// Send the error to the error channel
-			errChan <- err
-		}
-	}()
-
 	// Wait for an error from either goroutine
 	err := <-errChan
 	log.Error().Err(err).Msg("Failed to start server")
