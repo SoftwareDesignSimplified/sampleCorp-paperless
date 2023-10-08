@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"fmt"
 	"github.com/qwetu_petro/backend/workers"
 	"github.com/rs/zerolog/log"
@@ -53,5 +54,10 @@ func (server *Server) Start(address string) error {
 	err := <-errChan
 	log.Error().Err(err).Msg("Failed to start server")
 
+	return err
+}
+
+func (server *Server) Shutdown(ctx context.Context) error {
+	err := server.Shutdown(ctx)
 	return err
 }

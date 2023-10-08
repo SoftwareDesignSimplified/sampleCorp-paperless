@@ -3,12 +3,17 @@ package main
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	"github.com/hibiken/asynq"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/qwetu_petro/backend/workers"
 	"net"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 
@@ -72,17 +77,49 @@ func main() {
 	go runGateWayServer(conf, store)
 	runGinServer(conf, store, taskDistributor)
 }
+
 func runGinServer(config utils.Config, store db.Store, taskDistributor workers.TaskDistributor) {
 	server, err := api.NewServer(config, store, taskDistributor)
 	if err != nil {
 		log.Fatal().Err(err).Msg("can not create server")
 	}
 
-	err = server.Start(config.HTTPServerAddress)
-	if err != nil {
-		log.Fatal().Err(err).Msg("can not start server")
+	go func() {
+		err = server.Start("localhost:8888")
+		if err != nil && !errors.Is(http.ErrServerClosed, err) {
+			log.Fatal().Err(err).Msg("can not start server")
+		}
+	}()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+
+	// Context with timeout to allow for graceful shutdown
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := server.Shutdown(ctx); err != nil {
+		log.Fatal().Err(err).Msg("Server forced to shutdown")
 	}
+
+	log.Info().Msg("Server exiting")
 }
+
+//func runGinServer(config utils.Config, store db.Store, taskDistributor workers.TaskDistributor) {
+//	log.Info().Msg("About to create new server at " + config.HTTPServerAddress)
+//	server, err := api.NewServer(config, store, taskDistributor)
+//	if err != nil {
+//		log.Fatal().Err(err).Msg("can not create server")
+//	}
+//
+//	log.Info().Msg("Starting Gin server at " + config.HTTPServerAddress)
+//	err = server.Start(config.HTTPServerAddress)
+//	if err != nil {
+//		log.Fatal().Err(err).Msg("can not start server")
+//	}
+//	log.Info().Msg("Started successfully " + config.HTTPServerAddress)
+//}
 
 func runGrpcServer(config utils.Config, store db.Store) {
 	server, err := gapi.NewServer(config, store)
