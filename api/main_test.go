@@ -2,24 +2,23 @@ package api
 
 import (
 	"github.com/hibiken/asynq"
-	"github.com/qwetu_petro/backend/workers"
-	"os"
-	"testing"
-	"time"
-
 	db "github.com/qwetu_petro/backend/db/sqlc"
 	"github.com/qwetu_petro/backend/utils"
+	"github.com/qwetu_petro/backend/workers"
 	"github.com/rs/zerolog/log"
+	"os"
+	"testing"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/require"
 )
 
 func newTestServer(t *testing.T, store db.Store) *Server {
-	config := utils.Config{
-		TokenSymmetricKey:   utils.RandomString(32),
-		AccessTokenDuration: time.Minute,
+	config, err := utils.LoadConfig("../.")
+	if err != nil {
+		log.Fatal().Err(err).Msg("cannot load config")
 	}
+
 	redisOpts := asynq.RedisClientOpt{
 		Addr: config.RedisAddress,
 	}
