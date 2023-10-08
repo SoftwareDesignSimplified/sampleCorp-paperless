@@ -1,13 +1,13 @@
 package api
 
 import (
-	"fmt"
 	"github.com/gin-contrib/logger"
 	"github.com/gin-contrib/requestid"
 	"github.com/newrelic/go-agent/v3/integrations/nrgin"
 	"github.com/qwetu_petro/backend/newrelic"
 	"github.com/rs/zerolog/log"
 	"io"
+	"strings"
 	"time"
 
 	"github.com/qwetu_petro/backend/utils"
@@ -33,8 +33,7 @@ func (server *Server) setUpRouter(config utils.Config) {
 		allowOrigins = []string{"*"}
 	}
 
-	// CORS
-	fmt.Println("CORS ALLOWED ORIGIN: ", allowOrigins)
+	log.Info().Msg("CORS ALLOWED ORIGIN: " + strings.Join(allowOrigins, ","))
 
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:     allowOrigins,
