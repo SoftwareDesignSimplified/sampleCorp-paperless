@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func createRandomUser(t *testing.T) User {
+func CreateRandomUser(t *testing.T) User {
 	name := utils.RandomString(10)
 	email := utils.RandomEmail()
 
@@ -26,11 +26,11 @@ func createRandomUser(t *testing.T) User {
 }
 
 func TestQueries_CreateUser(t *testing.T) {
-	createRandomUser(t)
+	CreateRandomUser(t)
 }
 
 func TestQueries_GetUserByUserNameOrEmail(t *testing.T) {
-	user := createRandomUser(t)
+	user := CreateRandomUser(t)
 
 	args := GetUserByUserNameOrEmailParams{
 		Username: user.Username,
@@ -46,7 +46,7 @@ func TestQueries_GetUserByUserNameOrEmail(t *testing.T) {
 }
 
 func TestQueries_UpdateUser(t *testing.T) {
-	user := createRandomUser(t)
+	user := CreateRandomUser(t)
 	name := utils.RandomString(10)
 	email := utils.RandomEmail()
 	arg := UpdateUserParams{
@@ -64,7 +64,7 @@ func TestQueries_UpdateUser(t *testing.T) {
 }
 
 func TestQueries_DeleteUser(t *testing.T) {
-	user := createRandomUser(t)
+	user := CreateRandomUser(t)
 	err := testQueries.DeleteUser(context.Background(), user.ID)
 	require.NoError(t, err)
 	args := GetUserByUserNameOrEmailParams{

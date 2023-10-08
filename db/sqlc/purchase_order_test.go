@@ -30,7 +30,7 @@ func TestQueries_CreatePurchaseOrder(t *testing.T) {
 }
 
 func TestQueries_ApprovePurchaseOrder(t *testing.T) {
-	user := createRandomUser(t)
+	user := CreateRandomUser(t)
 	id := user.ID
 	d := int32(id)
 	status := "APPROVED"

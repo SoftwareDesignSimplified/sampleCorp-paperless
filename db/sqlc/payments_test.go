@@ -13,7 +13,7 @@ import (
 )
 
 func createRandomPaymentRequest(t *testing.T) PaymentRequest {
-	user := createRandomUser(t)
+	user := CreateRandomUser(t)
 
 	args := CreatePaymentRequestParams{
 		EmployeeID:  int32(user.ID),
@@ -31,7 +31,7 @@ func createRandomPaymentRequest(t *testing.T) PaymentRequest {
 }
 
 func createRandomPettyCash(t *testing.T) PettyCash {
-	user := createRandomUser(t)
+	user := CreateRandomUser(t)
 
 	randomFloat := rand.Float64() * 1000
 	var amount pgtype.Numeric
@@ -85,7 +85,7 @@ func TestQueries_UpdatePaymentRequest(t *testing.T) {
 
 func TestQueries_ApprovePaymentRequest(t *testing.T) {
 	date := time.Now()
-	admin := createRandomUser(t)
+	admin := CreateRandomUser(t)
 	id := int32(admin.ID)
 	paymentRequest := createRandomPaymentRequest(t)
 	args := ApprovePaymentRequestParams{

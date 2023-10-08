@@ -8,7 +8,7 @@ import (
 )
 
 func createRandomUserRoles(t *testing.T) UserRole {
-	user := createRandomUser(t)
+	user := CreateRandomUser(t)
 	role := createRandomRole(t)
 	userRoles, err := testQueries.CreateUserRoles(context.Background(), CreateUserRolesParams{
 		UserID: user.ID,
