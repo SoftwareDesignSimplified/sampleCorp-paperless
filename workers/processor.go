@@ -37,7 +37,7 @@ func NewRedisTaskProcessor(redisOpts asynq.RedisClientOpt, db db.Store) TaskProc
 			Concurrency: -1, // unlimited concurrency (default)
 			ErrorHandler: asynq.ErrorHandlerFunc(
 				func(ctx context.Context, task *asynq.Task, err error) {
-					log.Error().Err(err).Msgf("failed to process task %s with payload %v", task.Type, task.Payload)
+					log.Error().Err(err).Msgf("failed to process task %s with payload %v", task.Type(), task.Payload())
 				}),
 			Logger: NewLogger(),
 		})
