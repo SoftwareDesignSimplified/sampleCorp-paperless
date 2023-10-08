@@ -26,7 +26,7 @@ func (logger *Logger) Info(args ...interface{}) {
 }
 
 func (logger *Logger) Warn(args ...interface{}) {
-	logger.Print(zerolog.WarnLevel, args)
+	logger.Print(zerolog.WarnLevel, args...)
 
 }
 
