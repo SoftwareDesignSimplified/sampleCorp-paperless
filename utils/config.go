@@ -29,9 +29,12 @@ type Config struct {
 	AWSSecretAccessKey   string        `mapstructure:"AWS_SECRET_ACCESS_KEY"`
 	AWSRegion            string        `mapstructure:"AWS_REGION"`
 	AWSBucketName        string        `mapstructure:"AWS_BUCKET_NAME"`
+	SendLogsToStdOut     bool
 }
 
 func LoadConfig(path string) (config Config, err error) {
+	config.SendLogsToStdOut = true
+
 	viper.AddConfigPath(path)
 	viper.SetConfigName("app")
 	viper.SetConfigType("env")

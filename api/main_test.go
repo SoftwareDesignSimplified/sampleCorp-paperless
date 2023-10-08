@@ -18,6 +18,7 @@ func newTestServer(t *testing.T, store db.Store) *Server {
 	if err != nil {
 		log.Fatal().Err(err).Msg("cannot load config")
 	}
+	config.SendLogsToStdOut = false
 
 	redisOpts := asynq.RedisClientOpt{
 		Addr: config.RedisAddress,

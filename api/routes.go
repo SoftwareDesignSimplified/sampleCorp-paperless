@@ -7,6 +7,7 @@ import (
 	"github.com/newrelic/go-agent/v3/integrations/nrgin"
 	"github.com/qwetu_petro/backend/newrelic"
 	"github.com/rs/zerolog/log"
+	"io"
 	"time"
 
 	"github.com/qwetu_petro/backend/utils"
@@ -20,6 +21,9 @@ func (server *Server) setUpRouter(config utils.Config) {
 
 	var allowOrigins []string
 
+	if !config.SendLogsToStdOut {
+		log.Logger = log.Output(io.Discard)
+	}
 	log.Info().Msg("Setting up router")
 	log.Info().Msg("ENVIRONMENT: " + config.Environment)
 	// check if ENVIRONMENT is set to production or development

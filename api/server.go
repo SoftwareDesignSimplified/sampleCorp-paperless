@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/qwetu_petro/backend/workers"
 	"github.com/rs/zerolog/log"
+	"io"
 
 	db "github.com/qwetu_petro/backend/db/sqlc"
 	"github.com/qwetu_petro/backend/token"
@@ -22,7 +23,10 @@ type Server struct {
 }
 
 func NewServer(config utils.Config, store db.Store, taskDistributor workers.TaskDistributor) (*Server, error) {
-
+	if !config.SendLogsToStdOut {
+		log.Logger = log.Output(io.Discard)
+		gin.DefaultWriter = io.Discard
+	}
 	log.Info().Msg("Hurray  Qwetu Just Gone Live")
 
 	tokenMaker, err := token.NewPasetoMaker(config.TokenSymmetricKey)
