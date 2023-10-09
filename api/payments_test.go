@@ -25,12 +25,25 @@ func TestPaymentApprovalAPIApprovedForAnyUser(t *testing.T) {
 	store.EXPECT().ApprovePaymentRequestWithAudit(gomock.Any(), gomock.Any(), gomock.Any()).Return(paymentRequest, nil)
 
 	response, err := makePaymentRequestApprovalRequest(t, srv)
-	if err != nil {
-		t.Fatalf("Could not make request: %v", err)
-	}
+	require.NoError(t, err)
 
+	returnedPaymentRequest := extractPaymentRequestFromResponse(t, err, response)
 	require.Equal(t, http.StatusOK, response.StatusCode)
 
+	fieldsToCompare := []string{
+		"RequestID",
+		"PaymentRequestNo",
+		"AmountInWords",
+		"EmployeeID",
+		"Currency",
+		"Amount",
+		"Description",
+		"Status",
+	}
+	requirePaymentRequestFieldsEqual(t, fieldsToCompare, paymentRequest, returnedPaymentRequest)
+}
+
+func extractPaymentRequestFromResponse(t *testing.T, err error, response *http.Response) db.PaymentRequest {
 	bodyBytes, err := io.ReadAll(response.Body)
 	if err != nil {
 		t.Fatalf("Failed to read response body: %v", err)
@@ -40,9 +53,7 @@ func TestPaymentApprovalAPIApprovedForAnyUser(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to unmarshal JSON: %v", err)
 	}
-
-	requireEqualPaymentRequestsByName(t, paymentRequest, paymentRequestFromResponse)
-	require.NoError(t, err)
+	return paymentRequestFromResponse
 }
 
 func makePaymentRequestApprovalRequest(t *testing.T, srv *Server) (*http.Response, error) {
@@ -110,18 +121,7 @@ func setupTestServerAndMockStore(t *testing.T) (*mockdb.MockStore, *Server) {
 	return store, srv
 }
 
-func requireEqualPaymentRequestsByName(t *testing.T, expected, actual db.PaymentRequest) {
-	fieldNames := []string{
-		"RequestID",
-		"PaymentRequestNo",
-		"AmountInWords",
-		"EmployeeID",
-		"Currency",
-		"Amount",
-		"Description",
-		"Status",
-	}
-
+func requirePaymentRequestFieldsEqual(t *testing.T, fieldNames []string, expected, actual db.PaymentRequest) {
 	valExpected := reflect.ValueOf(expected)
 	valActual := reflect.ValueOf(actual)
 
