@@ -17,9 +17,10 @@ import (
 	"time"
 )
 
-func TestPaymentApprovalAPIApprovedForAnyUser(t *testing.T) {
+func TestGivenAUserWhoIsNotAnAdmin_WhenMakingAPaymentRequestApprovalRequest_ThenReturnUnauthorized(t *testing.T) {
 	store, srv := setupTestServerAndMockStore(t)
 	store.EXPECT().GetUserByUserNameOrEmail(gomock.Any(), gomock.Any()).Return(db.User{}, nil)
+	store.EXPECT().GetUserRoles(gomock.Any(), gomock.Any()).Return([]db.UserRole{}, nil)
 	store.EXPECT().GetUserRoles(gomock.Any(), gomock.Any()).Return([]db.UserRole{}, nil)
 	paymentRequest := createRandomPaymentRequest()
 	store.EXPECT().ApprovePaymentRequestWithAudit(gomock.Any(), gomock.Any(), gomock.Any()).Return(paymentRequest, nil)
@@ -27,8 +28,27 @@ func TestPaymentApprovalAPIApprovedForAnyUser(t *testing.T) {
 	response, err := makePaymentRequestApprovalRequest(t, srv)
 	require.NoError(t, err)
 
-	returnedPaymentRequest := extractPaymentRequestFromResponse(t, err, response)
+	require.Equal(t, http.StatusUnauthorized, response.StatusCode)
+	bodyBytes, err := io.ReadAll(response.Body)
+	if err != nil {
+		t.Fatalf("Failed to read response body: %v", err)
+	}
+	require.Equal(t, "\"you don't have permission to access this resource\"", string(bodyBytes))
+}
+
+func TestPaymentApprovalAPIApprovedForAnyUser(t *testing.T) {
+	store, srv := setupTestServerAndMockStore(t)
+	store.EXPECT().GetUserByUserNameOrEmail(gomock.Any(), gomock.Any()).Return(db.User{}, nil)
+	store.EXPECT().GetUserRoles(gomock.Any(), gomock.Any()).Return([]db.UserRole{}, nil)
+	store.EXPECT().GetUserRoles(gomock.Any(), gomock.Any()).Return([]db.UserRole{}, nil)
+	paymentRequest := createRandomPaymentRequest()
+	store.EXPECT().ApprovePaymentRequestWithAudit(gomock.Any(), gomock.Any(), gomock.Any()).Return(paymentRequest, nil)
+
+	response, err := makePaymentRequestApprovalRequest(t, srv)
+	require.NoError(t, err)
+
 	require.Equal(t, http.StatusOK, response.StatusCode)
+	returnedPaymentRequest := extractPaymentRequestFromResponse(t, err, response)
 
 	fieldsToCompare := []string{
 		"RequestID",
