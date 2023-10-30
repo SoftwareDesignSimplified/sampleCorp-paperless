@@ -369,15 +369,6 @@ type approvePaymentRequestRequest struct {
 func (server *Server) approvePaymentRequest(ctx *gin.Context) {
 	userId, _ := ctx.Get("user_id")
 	userIdInt, _ := userId.(int32)
-	roles, err := server.store.GetUserRoles(ctx, int64(userIdInt))
-	if err != nil {
-		return
-	}
-
-	if len(roles) == 0 {
-		ctx.JSON(401, "you don't have permission to access this resource")
-		return
-	}
 
 	var req approvePaymentRequestRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {

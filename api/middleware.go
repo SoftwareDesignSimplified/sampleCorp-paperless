@@ -61,7 +61,8 @@ func (server *Server) mustBeAdminMiddleware() gin.HandlerFunc {
 			return
 		}
 		if len(userRoles) == 0 {
-			c.Next()
+			c.AbortWithStatusJSON(http.StatusUnauthorized, "you don't have permission to access this resource")
+			return
 		}
 		c.Next()
 	}
