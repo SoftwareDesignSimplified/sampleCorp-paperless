@@ -65,82 +65,86 @@ func (server *Server) setUpRouter(config utils.Config) {
 	router.POST("/token/renew_access", server.renewAccessToken)
 
 	// Routes that require authentication
-	authRoutes := router.Group("/").Use(authMiddleware(server.tokenMaker)).Use(server.currentUserMiddleware())
+	loggedInRoutes := router.Group("/").Use(authMiddleware(server.tokenMaker)).Use(server.currentUserMiddleware())
 
 	// User routes
-	//authRoutes.POST("/users", server.createUser)
-	authRoutes.GET("/users", server.listUsers)
+	//loggedInRoutes.POST("/users", server.createUser)
+	loggedInRoutes.GET("/users", server.listUsers)
 
 	// Petty Cash Routes
 
-	authRoutes.POST("/petty-cash", server.createPettyCash)
-	authRoutes.GET("/petty-cash", server.listPettyCash)
-	authRoutes.PUT("/petty-cash", server.updatePettyCash)
-	authRoutes.POST("/petty-cash/approve", server.approvePettyCash)
-	authRoutes.GET("/petty-cash/download", server.downloadPettyCashPdf)
+	loggedInRoutes.POST("/petty-cash", server.createPettyCash)
+	loggedInRoutes.GET("/petty-cash", server.listPettyCash)
+	loggedInRoutes.PUT("/petty-cash", server.updatePettyCash)
+	loggedInRoutes.POST("/petty-cash/approve", server.approvePettyCash)
+	loggedInRoutes.GET("/petty-cash/download", server.downloadPettyCashPdf)
 	//Payment authorisation routes
-	authRoutes.POST("/payment-request", server.createPaymentRequest)
-	authRoutes.GET("/payment-request", server.listPaymentRequest)
-	authRoutes.PUT("/payment-request", server.updatePaymentRequest)
-	authRoutes.Use(server.mustBeAdminMiddleware()).POST("/payment-request/approve", server.approvePaymentRequest)
-	authRoutes.GET("/payment-request/download", server.downloadPaymentRequestPdf)
+	loggedInRoutes.POST("/payment-request", server.createPaymentRequest)
+	loggedInRoutes.GET("/payment-request", server.listPaymentRequest)
+	loggedInRoutes.PUT("/payment-request", server.updatePaymentRequest)
+
+	// Admin Routes
+	adminRoutes := loggedInRoutes.Use(server.mustBeAdminMiddleware())
+	adminRoutes.POST("/payment-request/approve", server.approvePaymentRequest)
+
+	loggedInRoutes.GET("/payment-request/download", server.downloadPaymentRequestPdf)
 
 	//Invoice routes
-	authRoutes.POST("/invoice", server.createInvoice)
-	authRoutes.GET("/invoice", server.listInvoice)
-	authRoutes.PUT("/invoice", server.updateInvoice)
-	authRoutes.POST("/invoice/approve", server.approveInvoice)
-	authRoutes.GET("/invoice/download", server.downloadInvoicePdf)
+	loggedInRoutes.POST("/invoice", server.createInvoice)
+	loggedInRoutes.GET("/invoice", server.listInvoice)
+	loggedInRoutes.PUT("/invoice", server.updateInvoice)
+	loggedInRoutes.POST("/invoice/approve", server.approveInvoice)
+	loggedInRoutes.GET("/invoice/download", server.downloadInvoicePdf)
 
 	// Purchase Order routes
-	authRoutes.POST("/purchase_order", server.createPurchaseOrder)
-	authRoutes.GET("/purchase_order", server.listPurchaseOrder)
-	authRoutes.PUT("/purchase_order", server.updatePurchaseOrder)
+	loggedInRoutes.POST("/purchase_order", server.createPurchaseOrder)
+	loggedInRoutes.GET("/purchase_order", server.listPurchaseOrder)
+	loggedInRoutes.PUT("/purchase_order", server.updatePurchaseOrder)
 	// TO DO: Ask if this is required
-	authRoutes.POST("/purchase_order/approve", server.approvePurchaseOrder)
-	authRoutes.GET("/purchase_order/download", server.downloadPurchaseOrderPdf)
+	loggedInRoutes.POST("/purchase_order/approve", server.approvePurchaseOrder)
+	loggedInRoutes.GET("/purchase_order/download", server.downloadPurchaseOrderPdf)
 
 	// Roles routes
-	authRoutes.POST("/roles", server.createRole)
-	authRoutes.GET("/roles", server.listRoles)
-	authRoutes.POST("/roles/:id", server.updateRole)
-	authRoutes.POST("/roles/delete", server.deleteRole)
+	loggedInRoutes.POST("/roles", server.createRole)
+	loggedInRoutes.GET("/roles", server.listRoles)
+	loggedInRoutes.POST("/roles/:id", server.updateRole)
+	loggedInRoutes.POST("/roles/delete", server.deleteRole)
 
 	// UserRoles routes
-	authRoutes.POST("/user-roles", server.createUserRole)
-	//authRoutes.GET("/user-roles", server.listUserRoles)
-	//authRoutes.POST("/user-roles/:id", server.updateUserRole)
-	authRoutes.POST("/users-roles/delete/:id", server.deleteUserRole)
+	loggedInRoutes.POST("/user-roles", server.createUserRole)
+	//loggedInRoutes.GET("/user-roles", server.listUserRoles)
+	//loggedInRoutes.POST("/user-roles/:id", server.updateUserRole)
+	loggedInRoutes.POST("/users-roles/delete/:id", server.deleteUserRole)
 
 	// Quotation routes
-	authRoutes.POST("/quotation", server.createQuotation)
-	authRoutes.GET("/quotation", server.listQuotations)
-	authRoutes.PUT("/quotation", server.updateQuotation)
-	//authRoutes.POST("/quotation/approve", server.approveQuotation)
-	authRoutes.GET("/quotation/download", server.downloadQuotationPdf)
+	loggedInRoutes.POST("/quotation", server.createQuotation)
+	loggedInRoutes.GET("/quotation", server.listQuotations)
+	loggedInRoutes.PUT("/quotation", server.updateQuotation)
+	//loggedInRoutes.POST("/quotation/approve", server.approveQuotation)
+	loggedInRoutes.GET("/quotation/download", server.downloadQuotationPdf)
 
 	// Bank Details routes
-	authRoutes.POST("/bank-details", server.createBankDetails)
-	authRoutes.GET("/bank-details", server.getBankDetails)
-	authRoutes.GET("/banks", server.listBanks)
+	loggedInRoutes.POST("/bank-details", server.createBankDetails)
+	loggedInRoutes.GET("/bank-details", server.getBankDetails)
+	loggedInRoutes.GET("/banks", server.listBanks)
 
 	// Company Details routes
-	authRoutes.POST("/company", server.createCompany)
-	authRoutes.GET("/company/delete", server.deleteCompany)
-	authRoutes.GET("/company", server.listCompanies)
+	loggedInRoutes.POST("/company", server.createCompany)
+	loggedInRoutes.GET("/company/delete", server.deleteCompany)
+	loggedInRoutes.GET("/company", server.listCompanies)
 
 	// Signatory routes
-	authRoutes.POST("/signatory", server.createSignatory)
-	authRoutes.GET("/signatory", server.listSignatories)
+	loggedInRoutes.POST("/signatory", server.createSignatory)
+	loggedInRoutes.GET("/signatory", server.listSignatories)
 
 	// Car routes
-	authRoutes.POST("/car", server.createCar)
-	authRoutes.GET("/car", server.listCars)
+	loggedInRoutes.POST("/car", server.createCar)
+	loggedInRoutes.GET("/car", server.listCars)
 
 	// Fuel routes
-	authRoutes.POST("/fuel", server.createFuelConsumption)
-	authRoutes.GET("/fuel", server.listFuelConsumption)
-	authRoutes.GET("/fuel/car/:id", server.getCarFuelConsumption)
+	loggedInRoutes.POST("/fuel", server.createFuelConsumption)
+	loggedInRoutes.GET("/fuel", server.listFuelConsumption)
+	loggedInRoutes.GET("/fuel/car/:id", server.getCarFuelConsumption)
 	router.GET("/fuel/range", server.getCarFuelByDateRange)
 
 	server.router = router
