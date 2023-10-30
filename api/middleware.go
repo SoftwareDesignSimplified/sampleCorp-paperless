@@ -52,6 +52,22 @@ func authMiddleware(tokenMaker token.Maker) gin.HandlerFunc {
 
 }
 
+func (server *Server) mustBeAdminMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		userId := c.GetInt64("user_id")
+		userRoles, err := server.store.GetUserRoles(c, userId)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, errorResponse(err))
+			return
+		}
+		if len(userRoles) == 0 {
+			c.Next()
+		}
+		c.Next()
+	}
+
+}
+
 func (server *Server) currentUserMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authorizationHeader := c.GetHeader("Authorization")

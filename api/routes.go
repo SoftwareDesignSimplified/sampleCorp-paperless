@@ -82,7 +82,7 @@ func (server *Server) setUpRouter(config utils.Config) {
 	authRoutes.POST("/payment-request", server.createPaymentRequest)
 	authRoutes.GET("/payment-request", server.listPaymentRequest)
 	authRoutes.PUT("/payment-request", server.updatePaymentRequest)
-	authRoutes.POST("/payment-request/approve", server.approvePaymentRequest)
+	authRoutes.Use(server.mustBeAdminMiddleware()).POST("/payment-request/approve", server.approvePaymentRequest)
 	authRoutes.GET("/payment-request/download", server.downloadPaymentRequestPdf)
 
 	//Invoice routes
