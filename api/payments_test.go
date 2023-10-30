@@ -17,7 +17,7 @@ import (
 	"time"
 )
 
-func TestGivenAUserWhoIsNotAnAdmin_WhenMakingAPaymentRequestApprovalRequest_ThenReturnUnauthorized(t *testing.T) {
+func TestGivenAUserWhoIsNotAnAdmin_WhenRequestingAPaymentApproval_ThenReturnUnauthorized(t *testing.T) {
 	store, srv := setupTestServerAndMockStore(t)
 	store.EXPECT().GetUserByUserNameOrEmail(gomock.Any(), gomock.Any()).Return(db.User{}, nil)
 	store.EXPECT().GetUserRoles(gomock.Any(), gomock.Any()).Return([]db.UserRole{}, nil)
