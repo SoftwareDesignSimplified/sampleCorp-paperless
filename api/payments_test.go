@@ -22,7 +22,6 @@ func TestGivenAUserWhoIsNotAnAdmin_WhenRequestingAPaymentApproval_ThenReturnUnau
 	store.EXPECT().GetUserByUserNameOrEmail(gomock.Any(), gomock.Any()).Return(db.User{}, nil)
 	store.EXPECT().GetUserRoles(gomock.Any(), gomock.Any()).Return([]db.UserRole{}, nil)
 	store.EXPECT().GetUserRoles(gomock.Any(), gomock.Any()).Return([]db.UserRole{}, nil)
-	store.EXPECT().GetUserRoles(gomock.Any(), gomock.Any()).Return([]db.UserRole{}, nil)
 	paymentRequest := createRandomPaymentRequest()
 	store.EXPECT().ApprovePaymentRequestWithAudit(gomock.Any(), gomock.Any(), gomock.Any()).Return(paymentRequest, nil)
 
@@ -46,7 +45,6 @@ func TestPaymentApprovalAPIApprovedForAnyUser(t *testing.T) {
 
 	store, srv := setupTestServerAndMockStore(t)
 	store.EXPECT().GetUserByUserNameOrEmail(gomock.Any(), gomock.Any()).Return(db.User{}, nil)
-	store.EXPECT().GetUserRoles(gomock.Any(), gomock.Any()).Return(mockUserRoles, nil)
 	store.EXPECT().GetUserRoles(gomock.Any(), gomock.Any()).Return(mockUserRoles, nil)
 	store.EXPECT().GetUserRoles(gomock.Any(), gomock.Any()).Return(mockUserRoles, nil)
 	paymentRequest := createRandomPaymentRequest()
