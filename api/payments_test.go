@@ -18,23 +18,49 @@ import (
 )
 
 func TestGivenAUserWhoIsNotAnAdmin_WhenRequestingAPaymentApproval_ThenReturnUnauthorized(t *testing.T) {
-	store, srv := setupTestServerAndMockStore(t)
-	store.EXPECT().GetUserByUserNameOrEmail(gomock.Any(), gomock.Any()).Return(db.User{}, nil)
-	store.EXPECT().GetUserRoles(gomock.Any(), gomock.Any()).Return([]db.UserRole{}, nil)
-	store.EXPECT().GetUserRoles(gomock.Any(), gomock.Any()).Return([]db.UserRole{}, nil)
-	paymentRequest := createRandomPaymentRequest()
-	store.EXPECT().ApprovePaymentRequestWithAudit(gomock.Any(), gomock.Any(), gomock.Any()).Return(paymentRequest, nil)
+	store, server := setupMockStoreAndTestServer(t)
+	expectUserToExist(regularUser(), store)
+	expectPaymentRequestToBeApproved(paymentRequest(), store)
 
-	response, err := makePaymentRequestApprovalRequest(t, srv)
+	response, err := makePaymentApprovalRequest(t, server)
+
 	require.NoError(t, err)
+	body, statusCode := extractBodyAndStatusCodeFromResponse(t, response)
+	require.Equal(t, http.StatusUnauthorized, statusCode)
+	require.Equal(t, `{"message":"You don't have permission to access this resource"}`, body)
+}
 
-	require.Equal(t, http.StatusUnauthorized, response.StatusCode)
+func extractBodyAndStatusCodeFromResponse(t *testing.T, response *http.Response) (body string, statusCode int) {
 	bodyBytes, err := io.ReadAll(response.Body)
 	if err != nil {
 		t.Fatalf("Failed to read response body: %v", err)
 	}
-	require.Equal(t, "\"you don't have permission to access this resource\"", string(bodyBytes))
+	statusCode = response.StatusCode
+	return string(bodyBytes), statusCode
 }
+
+func expectPaymentRequestToBeApproved(paymentRequest db.PaymentRequest, store *mockdb.MockStore) {
+	store.EXPECT().ApprovePaymentRequestWithAudit(gomock.Any(), gomock.Any(), gomock.Any()).Return(paymentRequest, nil)
+}
+
+func regularUser() db.User {
+	regularUser := db.User{}
+	regularUser.ID = 1234
+	regularUser.Username = "username"
+	regularUser.Email = "email@example.org"
+	return regularUser
+}
+
+func expectUserToExist(user db.User, store *mockdb.MockStore) {
+	store.EXPECT().GetUserByUserNameOrEmail(gomock.Any(), gomock.Any()).Return(user, nil)
+	store.EXPECT().GetUserRoles(gomock.Any(), gomock.Any()).Return([]db.UserRole{}, nil)
+	store.EXPECT().GetUserRoles(gomock.Any(), gomock.Any()).Return([]db.UserRole{}, nil)
+
+}
+
+//func TestWhenNoUserFound_ThenReturnUnauthorized(t *testing.T) {
+//
+//}
 
 func TestPaymentApprovalAPIApprovedForAnyUser(t *testing.T) {
 	mockUserRoles := []db.UserRole{
@@ -43,14 +69,14 @@ func TestPaymentApprovalAPIApprovedForAnyUser(t *testing.T) {
 		},
 	}
 
-	store, srv := setupTestServerAndMockStore(t)
+	store, srv := setupMockStoreAndTestServer(t)
 	store.EXPECT().GetUserByUserNameOrEmail(gomock.Any(), gomock.Any()).Return(db.User{}, nil)
 	store.EXPECT().GetUserRoles(gomock.Any(), gomock.Any()).Return(mockUserRoles, nil)
 	store.EXPECT().GetUserRoles(gomock.Any(), gomock.Any()).Return(mockUserRoles, nil)
-	paymentRequest := createRandomPaymentRequest()
+	paymentRequest := paymentRequest()
 	store.EXPECT().ApprovePaymentRequestWithAudit(gomock.Any(), gomock.Any(), gomock.Any()).Return(paymentRequest, nil)
 
-	response, err := makePaymentRequestApprovalRequest(t, srv)
+	response, err := makePaymentApprovalRequest(t, srv)
 	require.NoError(t, err)
 
 	require.Equal(t, http.StatusOK, response.StatusCode)
@@ -82,7 +108,7 @@ func extractPaymentRequestFromResponse(t *testing.T, err error, response *http.R
 	return paymentRequestFromResponse
 }
 
-func makePaymentRequestApprovalRequest(t *testing.T, srv *Server) (*http.Response, error) {
+func makePaymentApprovalRequest(t *testing.T, srv *Server) (*http.Response, error) {
 	request, err := http.NewRequest(
 		"POST",
 		"http://localhost:8085/payment-request/approve",
@@ -106,7 +132,7 @@ func makePaymentRequestApprovalRequest(t *testing.T, srv *Server) (*http.Respons
 	return response, err
 }
 
-func createRandomPaymentRequest() db.PaymentRequest {
+func paymentRequest() db.PaymentRequest {
 	adminID := int32(1234)
 	approvalDate := time.Now()
 	invoiceID := int32(1234)
@@ -130,7 +156,7 @@ func createRandomPaymentRequest() db.PaymentRequest {
 	return paymentRequest
 }
 
-func setupTestServerAndMockStore(t *testing.T) (*mockdb.MockStore, *Server) {
+func setupMockStoreAndTestServer(t *testing.T) (*mockdb.MockStore, *Server) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 

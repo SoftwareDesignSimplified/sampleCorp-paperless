@@ -367,6 +367,7 @@ type approvePaymentRequestRequest struct {
 }
 
 func (server *Server) approvePaymentRequest(ctx *gin.Context) {
+
 	userId, _ := ctx.Get("user_id")
 	userIdInt, _ := userId.(int32)
 
